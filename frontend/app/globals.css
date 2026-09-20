@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+/* Librería de Colores - Sistema de Diseño */
+:root {
+  /* Colores Base del Sistema */
+  --background-color: #ffffff;
+  --background-secondary: #f8fafc;
+  --foreground-color: #171717;
+  --foreground-secondary: #64748b;
+
+  /* Colores Principales */
+  --primary-color: #3b82f6; /* Azul principal */
+  --primary-hover: #2563eb;
+  --primary-light: #dbeafe;
+  --primary-dark: #1e40af;
+
+  /* Colores Secundarios */
+  --secondary-color: #6366f1; /* Índigo */
+  --secondary-hover: #4f46e5;
+  --secondary-light: #e0e7ff;
+  --secondary-dark: #3730a3;
+
+  /* Colores de Acento */
+  --accent-color: #10b981; /* Verde esmeralda */
+  --accent-hover: #059669;
+  --accent-light: #d1fae5;
+  --accent-dark: #047857;
+
+  /* Colores de Botones */
+  --button-color-principal: #3b82f6; /* Azul principal */
+  --button-color-secundario: #64748b; /* Gris azulado */
+  --button-color-success: #10b981; /* Verde */
+  --button-color-danger: #ef4444; /* Rojo */
+  --button-color-warning: #f59e0b; /* Amarillo/Naranja */
+
+  /* Estados de Interacción */
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+  --color-error: #ef4444;
+  --color-error-light: #fee2e2;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-info: #3b82f6;
+  --color-info-light: #dbeafe;
+
+  /* Grises del Sistema */
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+
+  /* Colores de Borde */
+  --border-color: #e2e8f0;
+  --border-color-hover: #cbd5e1;
+  --border-color-focus: #3b82f6;
+}
+
+body {
+  background: var(--background-color);
+  color: var(--foreground-color);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Tema Oscuro */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    /* Colores Base del Sistema */
+    --background-color: #0a0a0a;
+    --background-secondary: #171717;
+    --foreground-color: #ededed;
+    --foreground-secondary: #a1a1aa;
+
+    /* Colores Principales - Ajustados para modo oscuro */
+    --primary-color: #60a5fa; /* Azul más claro */
+    --primary-hover: #3b82f6;
+    --primary-light: #1e3a8a;
+    --primary-dark: #93c5fd;
+
+    /* Colores Secundarios - Ajustados para modo oscuro */
+    --secondary-color: #818cf8; /* Índigo más claro */
+    --secondary-hover: #6366f1;
+    --secondary-light: #312e81;
+    --secondary-dark: #a5b4fc;
+
+    /* Colores de Acento - Ajustados para modo oscuro */
+    --accent-color: #34d399; /* Verde más claro */
+    --accent-hover: #10b981;
+    --accent-light: #064e3b;
+    --accent-dark: #6ee7b7;
+
+    /* Colores de Botones - Ajustados para modo oscuro */
+    --button-color-principal: #60a5fa;
+    --button-color-secundario: #71717a;
+    --button-color-success: #34d399;
+    --button-color-danger: #f87171;
+    --button-color-warning: #fbbf24;
+
+    /* Estados de Interacción - Ajustados para modo oscuro */
+    --color-success: #34d399;
+    --color-success-light: #064e3b;
+    --color-error: #f87171;
+    --color-error-light: #7f1d1d;
+    --color-warning: #fbbf24;
+    --color-warning-light: #78350f;
+    --color-info: #60a5fa;
+    --color-info-light: #1e3a8a;
+
+    /* Grises del Sistema - Invertidos */
+    --gray-50: #0f172a;
+    --gray-100: #1e293b;
+    --gray-200: #334155;
+    --gray-300: #475569;
+    --gray-400: #64748b;
+    --gray-500: #94a3b8;
+    --gray-600: #cbd5e1;
+    --gray-700: #e2e8f0;
+    --gray-800: #f1f5f9;
+    --gray-900: #f8fafc;
+
+    /* Colores de Borde - Ajustados para modo oscuro */
+    --border-color: #374151;
+    --border-color-hover: #4b5563;
+    --border-color-focus: #60a5fa;
+  }
+}
+
+/* Tema Oscuro con clase .dark */
+:root.dark {
+  /* Colores Base del Sistema */
+  --background-color: #0a0a0a;
+  --background-secondary: #171717;
+  --foreground-color: #ededed;
+  --foreground-secondary: #a1a1aa;
+
+  /* Colores Principales - Ajustados para modo oscuro */
+  --primary-color: #60a5fa; /* Azul más claro */
+  --primary-hover: #3b82f6;
+  --primary-light: #1e3a8a;
+  --primary-dark: #93c5fd;
+
+  /* Colores Secundarios - Ajustados para modo oscuro */
+  --secondary-color: #818cf8; /* Índigo más claro */
+  --secondary-hover: #6366f1;
+  --secondary-light: #312e81;
+  --secondary-dark: #a5b4fc;
+
+  /* Colores de Acento - Ajustados para modo oscuro */
+  --accent-color: #34d399; /* Verde más claro */
+  --accent-hover: #10b981;
+  --accent-light: #064e3b;
+  --accent-dark: #6ee7b7;
+
+  /* Colores de Botones - Ajustados para modo oscuro */
+  --button-color-principal: #60a5fa;
+  --button-color-secundario: #71717a;
+  --button-color-success: #34d399;
+  --button-color-danger: #f87171;
+  --button-color-warning: #fbbf24;
+
+  /* Estados de Interacción - Ajustados para modo oscuro */
+  --color-success: #34d399;
+  --color-success-light: #064e3b;
+  --color-error: #f87171;
+  --color-error-light: #7f1d1d;
+  --color-warning: #fbbf24;
+  --color-warning-light: #78350f;
+  --color-info: #60a5fa;
+  --color-info-light: #1e3a8a;
+
+  /* Grises del Sistema - Invertidos */
+  --gray-50: #0f172a;
+  --gray-100: #1e293b;
+  --gray-200: #334155;
+  --gray-300: #475569;
+  --gray-400: #64748b;
+  --gray-500: #94a3b8;
+  --gray-600: #cbd5e1;
+  --gray-700: #e2e8f0;
+  --gray-800: #f1f5f9;
+  --gray-900: #f8fafc;
+
+  /* Colores de Borde - Ajustados para modo oscuro */
+  --border-color: #374151;
+  --border-color-hover: #4b5563;
+  --border-color-focus: #60a5fa;
+}
