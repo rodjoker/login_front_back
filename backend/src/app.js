@@ -5,7 +5,7 @@ import { env } from './config/env.js';
 import routes from './routes/index.js';
 import { notFound } from './middleware/notFound.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
-import { globalLimiter, authLimiter } from './middleware/rateLimiter.middleware.js';
+import { globalLimiter} from './middleware/rateLimiter.middleware.js';
 
 // Nunca llama a app.listen() acá -- eso es responsabilidad de server.js.
 // Separarlos es lo que permite que Supertest (tests/integration/*) importe
@@ -22,7 +22,6 @@ app.use(express.urlencoded({ extended: true }));
 // chocar con un límite pensado para tráfico real.
 if (env.nodeEnv !== 'test') {
   app.use('/api', globalLimiter);
-  app.use('/api/auth', authLimiter);
 }
 
 app.get('/health', (req, res) => {
