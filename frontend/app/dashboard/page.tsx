@@ -10,8 +10,9 @@ import Accordion from "@/components/Accordion";
 import Select from "@/components/Select";
 import Modal from "@/components/Modal";
 import { useEffect, useState } from "react";
-import { api, type User } from "@/lib/api";
+import { api, ApiError, type User } from "@/lib/api";
 import { getToken, clearToken } from "@/lib/session";
+import Router from "next/router";
 
 const paises = [
   { value: "pe", label: "Perú" },
@@ -23,25 +24,39 @@ export default function Dashboard() {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [modalOpen, setModalOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [error, setError] = useState("");
+
+  //Dashboard: haz que solo se limpie el token cuando el error sea de sesión inválida, y que un fallo de red o un 5xx muestre un error sin desloguear.
 
   useEffect(() => {
     const token = getToken();
     if (!token) {
-      window.location.href = "/";
+      Router.replace("/login");
       return;
     }
     api<{ user: User }>("/auth/me", { token })
       .then((data) => setUser(data.user))
       .catch(() => {
         // Token inválido, expirado o backend caído: se limpia y se vuelve al login.
-        clearToken();
-        window.location.href = "/";
+        try {
+          if (!token) {
+            clearToken();
+            Router.replace("/login");
+            return;
+          }
+        } catch (err) {
+          setError(
+            err instanceof ApiError
+              ? err.message
+              : "Ocurrió un error inesperado",
+          );
+        }
       });
   }, []);
 
   const handleLogout = () => {
     clearToken();
-    window.location.href = "/";
+    Router.replace("/login");
   };
 
   const stats = [
@@ -97,6 +112,18 @@ export default function Dashboard() {
       className="min-h-screen"
       style={{ backgroundColor: colors.backgroundSecondary }}
     >
+      {error && (
+        <div
+          role="alert"
+          className="p-3 rounded-md text-sm"
+          style={{
+            backgroundColor: colors.colorErrorLight,
+            color: colors.colorError,
+          }}
+        >
+          {error}
+        </div>
+      )}
       {/* Header */}
       <header
         className="border-b px-6 py-4"
