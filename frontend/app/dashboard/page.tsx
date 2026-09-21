@@ -36,9 +36,6 @@ export default function Dashboard() {
       return;
     }
 
-    setStatus("checking");
-    setError("");
-
     api<{ user: User }>("/auth/me", { token })
       .then((data) => {
         setUser(data.user);
@@ -70,6 +67,12 @@ export default function Dashboard() {
     clearToken();
     router.replace("/");
   };
+
+  const handleRetry = () => {
+    setStatus("checking");
+    setError("");
+    loadUserData();
+  }
 
   // 1. Pantalla de carga mientras se verifica el token
   if (status === "checking") {
@@ -107,7 +110,7 @@ export default function Dashboard() {
                 {error}
               </div>
               <div className="flex justify-center space-x-3 pt-2">
-                <Button variant="primary" onClick={loadUserData}>
+                <Button variant="primary" onClick={handleRetry}>
                   Reintentar
                 </Button>
                 <Button variant="secondary" onClick={handleLogout}>
