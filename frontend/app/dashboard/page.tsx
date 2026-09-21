@@ -6,26 +6,41 @@ import Button from "@/components/Button";
 import Card from "@/components/Card";
 import ThemeToggle from "@/components/ThemeToggle";
 import Carousel from "@/components/Carousel";
-import rodcodeCampus from "@/public/rodcode campus google.png";
-import rodcodeTecnologia from "@/public/rodcode tecnologia y olograma.png";
-import rodcodeCaricatura from "@/public/rodcode_caricatura.png";
-import rodolfoPerfil from "@/public/rodolfo perfil formal.png";
 import Accordion from "@/components/Accordion";
 import Select from "@/components/Select";
 import Modal from "@/components/Modal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { api, type User } from "@/lib/api";
+import { getToken, clearToken } from "@/lib/session";
 
 const paises = [
-  { value: 'pe', label: 'Perú' },
-  { value: 'ec', label: 'Ecuador' },
-  { value: 'co', label: 'Colombia', disabled: true },
+  { value: "pe", label: "Perú" },
+  { value: "ec", label: "Ecuador" },
+  { value: "co", label: "Colombia", disabled: true },
 ];
 
 export default function Dashboard() {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [modalOpen, setModalOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      window.location.href = "/";
+      return;
+    }
+    api<{ user: User }>("/auth/me", { token })
+      .then((data) => setUser(data.user))
+      .catch(() => {
+        // Token inválido, expirado o backend caído: se limpia y se vuelve al login.
+        clearToken();
+        window.location.href = "/";
+      });
+  }, []);
 
   const handleLogout = () => {
+    clearToken();
     window.location.href = "/";
   };
 
@@ -75,6 +90,8 @@ export default function Dashboard() {
     },
   ];
 
+  if (!user) return null; // mientras se verifica la sesión no se muestra nada
+
   return (
     <div
       className="min-h-screen"
@@ -97,8 +114,8 @@ export default function Dashboard() {
               Dashboard
             </h1>
             <p style={{ color: colors.foregroundSecondary }}>
-              Welcome back! Here&apos;s what&apos;s happening with your business
-              today.
+              Welcome back, {user.name}! Here&apos;s what&apos;s happening with
+              your business today.
             </p>
           </div>
           <div className="flex items-center space-x-4">
@@ -394,44 +411,39 @@ export default function Dashboard() {
           </Card>
 
           <Card title="Select Example">
-            <Select
-            label="País" options={paises} searchable
-            >
-
-            </Select>
+            <Select label="País" options={paises} searchable></Select>
           </Card>
 
           <Card title="Modal Example">
-  <Button onClick={() => setModalOpen(true)}>Abrir modal</Button>
+            <Button onClick={() => setModalOpen(true)}>Abrir modal</Button>
 
-  <Modal
-    open={modalOpen}
-    onClose={() => setModalOpen(false)}
-    title="Eliminar usuario"
-    description="Esta acción no se puede deshacer."
-    footer={
-      <>
-        <Button variant="secondary" onClick={() => setModalOpen(false)}>
-          Cancelar
-        </Button>
-        <Button variant="danger" onClick={() => setModalOpen(false)}>
-          Eliminar
-        </Button>
-      </>
-    }
-  >
-    <p>¿Seguro que quieres continuar?</p>
-    <div className="mt-4">
-      <Select label="País" options={paises} searchable />
-    </div>
-  </Modal>
-</Card>
-
+            <Modal
+              open={modalOpen}
+              onClose={() => setModalOpen(false)}
+              title="Eliminar usuario"
+              description="Esta acción no se puede deshacer."
+              footer={
+                <>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setModalOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button variant="danger" onClick={() => setModalOpen(false)}>
+                    Eliminar
+                  </Button>
+                </>
+              }
+            >
+              <p>¿Seguro que quieres continuar?</p>
+              <div className="mt-4">
+                <Select label="País" options={paises} searchable />
+              </div>
+            </Modal>
+          </Card>
         </div>
       </main>
     </div>
   );
 }
-
-
-      
