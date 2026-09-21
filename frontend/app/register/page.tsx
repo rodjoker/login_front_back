@@ -7,9 +7,11 @@ import { setToken } from '@/lib/session';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
 import Link from 'next/link';
-import Router from 'next/router';
+import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
+const router = useRouter();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,7 +28,7 @@ export default function RegisterPage() {
         body: { name, email, password },
       });
       setToken(token);
-      Router.replace("/dashboard");
+      router.replace("/dashboard");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Ocurrió un error inesperado');
     } finally {

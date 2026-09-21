@@ -10,8 +10,12 @@ import { useDarkMode } from "@/hooks/useDarkMode";
 import Button from "./Button";
 import Card from "./Card";
 import ThemeToggle from "./ThemeToggle";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const Login: React.FC = () => {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -31,7 +35,7 @@ const Login: React.FC = () => {
         },
       );
       setToken(token);
-      window.location.href = "/dashboard";
+      router.replace("/dashboard");
     } catch (err) {
       // El mensaje ya viene en español desde el backend (incluido el de bloqueo 423).
       setError(
@@ -132,13 +136,13 @@ const Login: React.FC = () => {
                   Remember me
                 </span>
               </label>
-              <a
+              <Link
                 href="#"
                 className="text-sm hover:underline"
                 style={{ color: colors.primaryColor }}
               >
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             {error && (

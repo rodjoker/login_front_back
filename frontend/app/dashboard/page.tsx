@@ -1,5 +1,6 @@
 // app/dashboard/page.tsx - Dashboard page
 "use client";
+
 import { colors } from "@/lib/colors";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import Button from "@/components/Button";
@@ -9,10 +10,10 @@ import Carousel from "@/components/Carousel";
 import Accordion from "@/components/Accordion";
 import Select from "@/components/Select";
 import Modal from "@/components/Modal";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { api, ApiError, type User } from "@/lib/api";
 import { getToken, clearToken } from "@/lib/session";
-import Router from "next/router";
+import { useRouter } from "next/navigation";
 
 const paises = [
   { value: "pe", label: "Perú" },
@@ -21,109 +22,127 @@ const paises = [
 ];
 
 export default function Dashboard() {
+  const router = useRouter();
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [modalOpen, setModalOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState("");
+  const [status, setStatus] = useState<"checking" | "ready" | "error">("checking");
 
-  //Dashboard: haz que solo se limpie el token cuando el error sea de sesión inválida, y que un fallo de red o un 5xx muestre un error sin desloguear.
-
-  useEffect(() => {
+  const loadUserData = useCallback(() => {
     const token = getToken();
     if (!token) {
-      Router.replace("/login");
+      router.replace("/");
       return;
     }
+
+    setStatus("checking");
+    setError("");
+
     api<{ user: User }>("/auth/me", { token })
-      .then((data) => setUser(data.user))
-      .catch(() => {
-        // Token inválido, expirado o backend caído: se limpia y se vuelve al login.
-        try {
-          if (!token) {
-            clearToken();
-            Router.replace("/login");
-            return;
-          }
-        } catch (err) {
-          setError(
-            err instanceof ApiError
-              ? err.message
-              : "Ocurrió un error inesperado",
-          );
+      .then((data) => {
+        setUser(data.user);
+        setStatus("ready");
+      })
+      .catch((err: unknown) => {
+        if (err instanceof ApiError && err.status === 401) {
+          clearToken();
+          router.replace("/");
+          return;
         }
+
+        // Error de red (status 0), error de servidor (5xx) o rate limit (429)
+        const message =
+          err instanceof ApiError
+            ? err.message
+            : "No se pudo conectar con el servidor. Revisa tu conexión.";
+        
+        setError(message);
+        setStatus("error");
       });
-  }, []);
+  }, [router]);
+
+  useEffect(() => {
+    loadUserData();
+  }, [loadUserData]);
 
   const handleLogout = () => {
     clearToken();
-    Router.replace("/login");
+    router.replace("/");
   };
 
+  // 1. Pantalla de carga mientras se verifica el token
+  if (status === "checking") {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: colors.backgroundSecondary }}
+      >
+        <p style={{ color: colors.foregroundSecondary }}>Verificando sesión...</p>
+      </div>
+    );
+  }
+
+  // 2. Pantalla de fallo (conserva el token y permite reintentar)
+  if (status === "error") {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center p-6"
+        style={{ backgroundColor: colors.backgroundSecondary }}
+      >
+        <div className="max-w-md w-full">
+          <Card variant="default">
+            <div className="text-center space-y-4">
+              <h2 className="text-xl font-bold" style={{ color: colors.foregroundColor }}>
+                Problema de conexión
+              </h2>
+              <div
+                role="alert"
+                className="p-3 rounded-md text-sm text-left"
+                style={{
+                  backgroundColor: colors.colorErrorLight,
+                  color: colors.colorError,
+                }}
+              >
+                {error}
+              </div>
+              <div className="flex justify-center space-x-3 pt-2">
+                <Button variant="primary" onClick={loadUserData}>
+                  Reintentar
+                </Button>
+                <Button variant="secondary" onClick={handleLogout}>
+                  Cerrar sesión
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Fallback de seguridad si no hay usuario cargado
+  if (!user) return null;
+
   const stats = [
-    {
-      title: "Total Users",
-      value: "2,847",
-      change: "+12%",
-      variant: "success" as const,
-    },
-    {
-      title: "Revenue",
-      value: "$47,389",
-      change: "+8%",
-      variant: "success" as const,
-    },
-    {
-      title: "Orders",
-      value: "1,247",
-      change: "-3%",
-      variant: "error" as const,
-    },
-    {
-      title: "Conversion Rate",
-      value: "3.2%",
-      change: "+1.2%",
-      variant: "success" as const,
-    },
+    { title: "Total Users", value: "2,847", change: "+12%", variant: "success" as const },
+    { title: "Revenue", value: "$47,389", change: "+8%", variant: "success" as const },
+    { title: "Orders", value: "1,247", change: "-3%", variant: "error" as const },
+    { title: "Conversion Rate", value: "3.2%", change: "+1.2%", variant: "success" as const },
   ];
 
   const recentActivities = [
-    {
-      user: "John Doe",
-      action: "Created a new project",
-      time: "2 minutes ago",
-    },
-    {
-      user: "Sarah Wilson",
-      action: "Updated user profile",
-      time: "15 minutes ago",
-    },
+    { user: "John Doe", action: "Created a new project", time: "2 minutes ago" },
+    { user: "Sarah Wilson", action: "Updated user profile", time: "15 minutes ago" },
     { user: "Mike Johnson", action: "Completed task #247", time: "1 hour ago" },
-    {
-      user: "Emily Davis",
-      action: "Uploaded new document",
-      time: "2 hours ago",
-    },
+    { user: "Emily Davis", action: "Uploaded new document", time: "2 hours ago" },
   ];
-
-  if (!user) return null; // mientras se verifica la sesión no se muestra nada
 
   return (
     <div
       className="min-h-screen"
       style={{ backgroundColor: colors.backgroundSecondary }}
     >
-      {error && (
-        <div
-          role="alert"
-          className="p-3 rounded-md text-sm"
-          style={{
-            backgroundColor: colors.colorErrorLight,
-            color: colors.colorError,
-          }}
-        >
-          {error}
-        </div>
-      )}
       {/* Header */}
       <header
         className="border-b px-6 py-4"
@@ -273,7 +292,7 @@ export default function Dashboard() {
               <Button variant="primary" className="w-full">
                 Create Project
               </Button>
-              <Button variant="secondary" className="w-full ">
+              <Button variant="secondary" className="w-full">
                 Add User
               </Button>
               <Button variant="success" className="w-full">
@@ -287,11 +306,8 @@ export default function Dashboard() {
 
           <div className="flex flex-wrap gap-4 justify-center">
             <Button variant="primary" title="Create Project" disabled />
-
             <Button variant="secondary" size="sm" title="Add User" />
-
             <Button variant="success" title="Generate Report 2" />
-
             <Button variant="warning" size="lg" title="View Analytics 2" />
           </div>
 
@@ -329,30 +345,10 @@ export default function Dashboard() {
                 </thead>
                 <tbody>
                   {[
-                    {
-                      id: "#1001",
-                      customer: "Alice Johnson",
-                      amount: "$299.00",
-                      status: "Completed",
-                    },
-                    {
-                      id: "#1002",
-                      customer: "Bob Smith",
-                      amount: "$149.00",
-                      status: "Processing",
-                    },
-                    {
-                      id: "#1003",
-                      customer: "Charlie Brown",
-                      amount: "$399.00",
-                      status: "Shipped",
-                    },
-                    {
-                      id: "#1004",
-                      customer: "Diana Prince",
-                      amount: "$199.00",
-                      status: "Pending",
-                    },
+                    { id: "#1001", customer: "Alice Johnson", amount: "$299.00", status: "Completed" },
+                    { id: "#1002", customer: "Bob Smith", amount: "$149.00", status: "Processing" },
+                    { id: "#1003", customer: "Charlie Brown", amount: "$399.00", status: "Shipped" },
+                    { id: "#1004", customer: "Diana Prince", amount: "$199.00", status: "Pending" },
                   ].map((order, index) => (
                     <tr key={index}>
                       <td
@@ -401,10 +397,7 @@ export default function Dashboard() {
             <Carousel
               images={[
                 { src: "/rodcode campus google.png", alt: "RC Campus" },
-                {
-                  src: "/rodcode tecnologia y olograma.png",
-                  alt: "RC Tecnologia",
-                },
+                { src: "/rodcode tecnologia y olograma.png", alt: "RC Tecnologia" },
                 { src: "/rodcode_caricatura.png", alt: "RC Caricatura" },
                 { src: "/rodolfo perfil formal.png", alt: "RC Perfil Formal" },
               ]}
@@ -451,10 +444,7 @@ export default function Dashboard() {
               description="Esta acción no se puede deshacer."
               footer={
                 <>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setModalOpen(false)}
-                  >
+                  <Button variant="secondary" onClick={() => setModalOpen(false)}>
                     Cancelar
                   </Button>
                   <Button variant="danger" onClick={() => setModalOpen(false)}>
