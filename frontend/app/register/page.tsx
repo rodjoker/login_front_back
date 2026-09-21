@@ -6,6 +6,8 @@ import { api, ApiError, type User } from '@/lib/api';
 import { setToken } from '@/lib/session';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
+import Link from 'next/link';
+import Router from 'next/router';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -24,7 +26,7 @@ export default function RegisterPage() {
         body: { name, email, password },
       });
       setToken(token);
-      window.location.href = '/dashboard';
+      Router.replace("/dashboard");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Ocurrió un error inesperado');
     } finally {
@@ -94,9 +96,9 @@ export default function RegisterPage() {
           <div className="mt-6 text-center">
             <p style={{ color: colors.foregroundSecondary }}>
               Already have an account?{' '}
-              <a href="/" className="hover:underline" style={{ color: colors.primaryColor }}>
+              <Link href="/" className="hover:underline" style={{ color: colors.primaryColor }}>
                 Sign in
-              </a>
+              </Link>
             </p>
           </div>
         </Card>
