@@ -1,5 +1,34 @@
 import rateLimit from 'express-rate-limit';
 
+import { env } from '../config/env.js';
+
+// Exención para suite de tests
+const skipTests = () => env.nodeEnv === 'test';
+
+// 1. loginLimiter: 10 intentos fallidos cada 15 minutos por IP
+// Justificación: Frena ataques de fuerza bruta y password spraying sobre hashes bcrypt sin penalizar inicios de sesión legítimos.
+export const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  skipSuccessfulRequests: true,
+  skip: skipTests,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Demasiados intentos fallidos. Inténtalo de nuevo en 15 minutos.' }
+});
+
+// 2. registerLimiter: 5 registros por hora por IP
+// Justificación: Previene la creación masiva de cuentas falsas, abuso de CPU al hashear contraseñas y spam sin afectar al usuario común.
+export const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  skipSuccessfulRequests: false,
+  skip: skipTests,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Límite de registros alcanzado para esta IP. Inténtalo más tarde.' }
+});
+
 // Límite general para toda la API -- red de seguridad básica contra abuso.
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -9,15 +38,4 @@ export const globalLimiter = rateLimit({
   message: { success: false, message: 'Demasiadas solicitudes, intenta de nuevo más tarde.' },
 });
 
-// Límite más estricto solo para /api/auth: es el punto de entrada que más
-// interesa frenar (fuerza bruta de login, registro masivo de cuentas). El
-// bloqueo por intentos fallidos (auth.service.js) ya protege una cuenta
-// puntual; esto protege el endpoint en sí contra un atacante probando
-// muchos correos distintos.
-export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: 'Demasiados intentos de autenticación, intenta de nuevo más tarde.' },
-});
+

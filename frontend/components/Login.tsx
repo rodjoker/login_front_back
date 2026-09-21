@@ -135,14 +135,7 @@ const Login: React.FC = () => {
                 >
                   Remember me
                 </span>
-              </label>
-              <Link
-                href="#"
-                className="text-sm hover:underline"
-                style={{ color: colors.primaryColor }}
-              >
-                Forgot password?
-              </Link>
+              </label>           
             </div>
 
             {error && (
@@ -171,13 +164,13 @@ const Login: React.FC = () => {
           <div className="mt-6 text-center">
             <p style={{ color: colors.foregroundSecondary }}>
               Don&apos;t have an account?{" "}
-              <a
+              <Link
                 href="/register"
                 className="hover:underline"
                 style={{ color: colors.primaryColor }}
               >
                 Sign up
-              </a>
+              </Link>
             </p>
           </div>
         </Card>
