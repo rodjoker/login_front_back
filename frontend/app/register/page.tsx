@@ -41,8 +41,7 @@ const router = useRouter();
     color: colors.foregroundColor,
     border: `1px solid ${colors.borderColor}`,
   };
-  const inputClass =
-    'w-full px-3 py-2 rounded-md text-sm transition-colors focus:outline-none focus:ring-2';
+  const inputClass = 'w-full px-3 py-2 rounded-md text-sm transition-colors focus:outline-none focus:ring-2';
 
   return (
     <div
